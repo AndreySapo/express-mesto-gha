@@ -13,7 +13,7 @@ module.exports.getUserByID = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.query;
+  const { name, about, avatar } = req.body;
 
   // eslint-disable-next-line no-undef, no-restricted-globals
   User.create({ name, about, avatar })
