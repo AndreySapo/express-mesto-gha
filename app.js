@@ -17,14 +17,14 @@ mongoose.connect('mongodb://0.0.0.0:27017/mestodb', {
 
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
-app.use('/', usersRouter);
 app.use((req, res, next) => {
   req.user = {
-    _id: '63f9f25995eb0a0af32d722c',
+    _id: '63f9f2e0156729d293d8f458',
   };
 
   next();
 });
+app.use('/', usersRouter);
 app.use('/', cardsRouter);
 
 app.listen(3000);

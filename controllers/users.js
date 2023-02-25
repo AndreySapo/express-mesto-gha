@@ -20,3 +20,15 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
 };
+
+module.exports.updateUser = (req, res) => {
+  const { name, about, avatar } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user,
+    { name, about, avatar },
+    { new: true, runValidators: true, upsert: true },
+  )
+    .then((user) => res.send({ data: user }))
+    .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
+};
