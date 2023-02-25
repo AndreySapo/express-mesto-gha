@@ -1,14 +1,13 @@
 const express = require('express');
-
-// Слушаем 3000 порт
-
-const { PORT = 3000 } = process.env;
+// eslint-disable-next-line import/no-extraneous-dependencies
+const mongoose = require('mongoose');
 
 const app = express();
 
-app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
-
-  // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
+mongoose.set('strictQuery', false);
+// подключаемся к серверу mongo
+mongoose.connect('mongodb://0.0.0.0:27017/mestodb', {
+  useNewUrlParser: true,
 });
+
+app.listen(3000);
