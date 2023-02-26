@@ -36,14 +36,14 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then((deletedCard) => {
-      if (!deletedCard) {
-        res.status(ERROR_BAD_REQUEST).send({ message: 'Карточка с указанным _id не найдена.' });
-        return;
-      }
+    .then(() => {
       res.send(`Карточка ${req.params.cardId} удалена`);
     })
     .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+        return;
+      }
       if (err.name === 'InternalServerError') {
         res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
         return;
