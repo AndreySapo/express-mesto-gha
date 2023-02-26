@@ -18,6 +18,9 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserByID = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
+      if (!user) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Получение пользователя с несуществующим в БД id' });
+      }
       res.send({
         name: user.name,
         about: user.about,
