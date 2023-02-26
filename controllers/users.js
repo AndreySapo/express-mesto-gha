@@ -18,10 +18,6 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserByID = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      if (!user) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
-      }
       res.send({
         name: user.name,
         about: user.about,
@@ -30,6 +26,10 @@ module.exports.getUserByID = (req, res) => {
       });
     })
     .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERROR_BAD_REQUEST).send({ message: 'Пользователь по указанному _id не найден.' });
+        return;
+      }
       if (err.name === 'InternalServerError') {
         res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
         return;
