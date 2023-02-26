@@ -1,11 +1,9 @@
-/* eslint-disable no-unused-vars */
 const express = require('express');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
+const { ERROR_NOT_FOUND } = require('./errors/errors');
 
 const app = express();
 
@@ -24,5 +22,10 @@ app.use((req, res, next) => {
 });
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.use((req, res, next) => {
+  res.status(ERROR_NOT_FOUND).send({ message: 'Этот путь не реализован' });
+
+  next();
+});
 
 app.listen(3000);
