@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('mongoose-type-url');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -8,7 +9,7 @@ const cardSchema = new mongoose.Schema({
     maxlength: [30, 'Обязано быть меньше 30 символов'],
   },
   link: {
-    type: String,
+    type: mongoose.SchemaTypes.Url,
     required: true,
   },
   owner: {

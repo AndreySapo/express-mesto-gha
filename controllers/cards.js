@@ -6,7 +6,7 @@ module.exports.getCards = (req, res) => {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -27,7 +27,7 @@ module.exports.createCard = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -50,7 +50,7 @@ module.exports.deleteCard = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -76,7 +76,7 @@ module.exports.likeCard = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -102,7 +102,7 @@ module.exports.dislikeCard = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
