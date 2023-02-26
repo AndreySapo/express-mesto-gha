@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
+require('mongoose-type-url');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
     maxlength: [30, 'Обязано быть меньше 30 символов'],
   },
   avatar: {
-    type: String,
+    type: mongoose.SchemaTypes.Url,
     required: true,
   },
 });
