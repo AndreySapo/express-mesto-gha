@@ -19,13 +19,13 @@ module.exports.createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      if (!card) {
-        res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
-        return;
-      }
       res.send({ data: card });
     })
     .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
+        return;
+      }
       if (err.name === 'InternalServerError') {
         res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
         return;
