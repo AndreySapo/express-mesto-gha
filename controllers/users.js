@@ -7,7 +7,7 @@ module.exports.getUsers = (req, res) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -34,7 +34,7 @@ module.exports.getUserByID = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -58,7 +58,7 @@ module.exports.createUser = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -92,7 +92,7 @@ module.exports.updateUser = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -126,7 +126,7 @@ module.exports.updateAvatar = (req, res) => {
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Ошибка по умолчанию' });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
