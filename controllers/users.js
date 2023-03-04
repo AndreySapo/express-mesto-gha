@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../errors/errors');
 
@@ -43,25 +45,40 @@ module.exports.getUserByID = (req, res) => {
 
 // создать юзера
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      _id: user._id,
-    }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
-        return;
-      }
-      if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
-        return;
-      }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      })
+        .then((user) => {
+          res.send({
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+            _id: user._id,
+          });
+        })
+        .catch((err) => {
+          // MongoServerError
+          if (err.name === 'MongoServerError') {
+            res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+            return;
+          }
+          if (err.name === 'ValidationError') {
+            res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+            return;
+          }
+          if (err.name === 'InternalServerError') {
+            res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+            return;
+          }
+          res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
+        });
     });
 };
 
