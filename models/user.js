@@ -5,19 +5,19 @@ require('mongoose-type-url');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
     minlength: [2, 'Обязано быть больше 2 символов'],
     maxlength: [30, 'Обязано быть меньше 30 символов'],
+    default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
-    required: true,
     minlength: [2, 'Обязано быть больше 2 символов'],
     maxlength: [30, 'Обязано быть меньше 30 символов'],
+    default: 'Исследователь',
   },
   avatar: {
     type: mongoose.SchemaTypes.Url,
-    required: true,
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {
     type: String,
