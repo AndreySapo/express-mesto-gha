@@ -1,7 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcrypt');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../errors/errors');
+const {
+  ERROR_BAD_REQUEST, ERROR_UNAUTHORIZED, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER,
+} = require('../errors/errors');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 // получить всех юзеров
 module.exports.getUsers = (req, res) => {
@@ -177,5 +183,33 @@ module.exports.updateAvatar = (req, res) => {
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      // аутентификация успешна! пользователь в переменной user
+
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      });
+
+      res.send({ _id: user._id });
+    })
+    .catch((err) => {
+      // ошибка аутентификации
+      res
+        .status(ERROR_UNAUTHORIZED)
+        .send({ message: err.message });
     });
 };
