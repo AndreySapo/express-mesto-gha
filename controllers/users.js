@@ -213,3 +213,15 @@ module.exports.login = (req, res) => {
         .send({ message: err.message });
     });
 };
+
+module.exports.userInfo = (req, res) => {
+  const { _id } = req.user._id;
+
+  User.findOne(_id)
+    .then((user) => {
+      res.send({
+        user,
+      });
+    })
+    .catch((err) => res.status(401).send(err));
+};
