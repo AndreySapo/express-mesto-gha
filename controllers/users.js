@@ -218,12 +218,18 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.userInfo = (req, res) => {
-  const { _id } = req.user._id;
+  const { _id } = req.user;
 
-  User.findOne(_id)
+  User.findById(_id)
     .then((user) => {
+      if (!user) {
+        res
+          .status(ERROR_NOT_FOUND)
+          .send('Пользователя с указанным _id не существует');
+      }
+
       res.send({
-        user,
+        data: user,
       });
     })
     .catch((err) => {
