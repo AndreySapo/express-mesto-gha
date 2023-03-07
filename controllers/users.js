@@ -64,10 +64,18 @@ module.exports.createUser = (req, res) => {
     password,
   } = req.body;
 
+  if (!password) {
+    res
+      .status(ERROR_BAD_REQUEST)
+      .send('Переданы некорректные данные при создании пользователя');
+  }
+
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        res.status(ERROR_CONFLICT).send('Пользователь с этим email уже существует');
+        res
+          .status(ERROR_CONFLICT)
+          .send('Пользователь с этим email уже существует');
       }
     });
 
@@ -163,11 +171,15 @@ module.exports.updateAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
+        res
+          .status(ERROR_BAD_REQUEST)
+          .send({ message: 'Переданы некорректные данные при обновлении аватара.' });
         return;
       }
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+        res
+          .status(ERROR_INTERNAL_SERVER)
+          .send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
@@ -179,8 +191,6 @@ module.exports.login = (req, res) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      // аутентификация успешна! пользователь в переменной user
-
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
@@ -195,7 +205,6 @@ module.exports.login = (req, res) => {
       res.send({ _id: user._id });
     })
     .catch((err) => {
-      // ошибка аутентификации
       res
         .status(ERROR_UNAUTHORIZED)
         .send({ message: err.message });
@@ -214,7 +223,9 @@ module.exports.userInfo = (req, res) => {
     .catch((err) => {
       // ? может ещё какая-то ошибка должна быть?
       if (err.name === 'InternalServerError') {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+        res
+          .status(ERROR_INTERNAL_SERVER)
+          .send({ message: 'На сервере произошла ошибка' });
         return;
       }
       res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
