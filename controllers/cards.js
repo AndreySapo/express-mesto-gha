@@ -52,7 +52,7 @@ module.exports.deleteCard = (req, res) => {
 
       // res.send(userID === cardOwner);
       if (userID !== cardOwner) {
-        res.status(ERROR_FORBIDDEN).send('Попытка удалить чужую карточку');
+        res.status(ERROR_FORBIDDEN).send({ message: 'Попытка удалить чужую карточку' });
       }
 
       card.remove()
