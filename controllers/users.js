@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
@@ -75,7 +76,7 @@ module.exports.createUser = (req, res) => {
       if (user) {
         res
           .status(ERROR_CONFLICT)
-          .send('Пользователь с этим email уже существует');
+          .send({ message: 'Пользователь с этим email уже существует' });
       }
     });
 
@@ -89,7 +90,12 @@ module.exports.createUser = (req, res) => {
         password: hash,
       })
         .then((user) => {
-          res.send({ user });
+          res.send({
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+          });
         })
         .catch((err) => {
           // MongoServerError
