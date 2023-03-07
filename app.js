@@ -2,7 +2,7 @@ const { PORT = 3000, SERVER = 'mongodb://0.0.0.0:27017/mestodb' } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { celebrate, Joi } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { ERROR_NOT_FOUND } = require('./errors/errors');
@@ -35,6 +35,7 @@ app.post('/signup', celebrate({
 }), createUser);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
+app.use(errors());
 app.use((req, res, next) => {
   res.status(ERROR_NOT_FOUND).send({ message: 'Этот путь не реализован' });
 
