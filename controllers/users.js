@@ -89,7 +89,12 @@ module.exports.createUser = (req, res) => {
         password: hash,
       })
         .then((user) => {
-          res.send({ user });
+          res.send({
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+          });
         })
         .catch((err) => {
           // MongoServerError
