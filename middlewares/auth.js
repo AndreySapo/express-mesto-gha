@@ -8,7 +8,7 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 const handleAuthError = (res) => {
   res
-    .status(ERROR_UNAUTHORIZED)
+    // .status(ERROR_UNAUTHORIZED)
     .send({ message: 'Необходима авторизация' });
 };
 
