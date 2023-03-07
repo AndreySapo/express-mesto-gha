@@ -213,5 +213,12 @@ module.exports.userInfo = (req, res) => {
         user,
       });
     })
-    .catch((err) => res.status(401).send(err));
+    .catch((err) => {
+      // ? может ещё какая-то ошибка должна быть?
+      if (err.name === 'InternalServerError') {
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+        return;
+      }
+      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
+    });
 };
