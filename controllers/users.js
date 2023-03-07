@@ -33,12 +33,7 @@ module.exports.getUserByID = (req, res) => {
           .status(ERROR_NOT_FOUND)
           .send({ message: 'Получение пользователя с несуществующим в БД id' });
       }
-      res.send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      });
+      res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -77,13 +72,7 @@ module.exports.createUser = (req, res) => {
         password: hash,
       })
         .then((user) => {
-          res.send({
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-            email: user.email,
-            _id: user._id,
-          });
+          res.send({ user });
         })
         .catch((err) => {
           // MongoServerError
@@ -126,12 +115,7 @@ module.exports.updateUser = (req, res) => {
           .send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
-      res.send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      });
+      res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -166,12 +150,7 @@ module.exports.updateAvatar = (req, res) => {
           .send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
-      res.send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        _id: user._id,
-      });
+      res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
