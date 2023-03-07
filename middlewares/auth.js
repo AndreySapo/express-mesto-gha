@@ -12,15 +12,7 @@ const handleAuthError = (res) => {
 
 const extractBearerToken = (header) => header.replace('Bearer ', '');
 
-// eslint-disable-next-line consistent-return
-module.exports = (req, res, next) => {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    return handleAuthError(res);
-  }
-
-  const token = extractBearerToken(authorization);
+const generatePayload = (res, token) => {
   let payload;
 
   try {
@@ -29,6 +21,24 @@ module.exports = (req, res, next) => {
     return handleAuthError(res);
   }
 
-  req.user = payload;
+  return payload;
+};
+
+// eslint-disable-next-line consistent-return
+module.exports = (req, res, next) => {
+  const { authorization } = req.headers;
+
+  if (authorization) {
+    if (authorization.startsWith('Bearer ')) {
+      req.user = generatePayload(res, extractBearerToken(authorization));
+    } else {
+      return handleAuthError(res);
+    }
+  } else if (req.cookies.jwt) {
+    req.user = generatePayload(res, req.cookies.jwt);
+  } else {
+    return handleAuthError(res);
+  }
+
   next();
 };
