@@ -1,14 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
-const {
-  ERROR_UNAUTHORIZED,
-} = require('../errors/errors');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 const handleAuthError = (res) => {
   res
-    .status(ERROR_UNAUTHORIZED)
+    // .status(ERROR_UNAUTHORIZED)
     .send({ message: 'Необходима авторизация' });
 };
 
