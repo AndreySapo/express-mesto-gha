@@ -75,7 +75,7 @@ module.exports.createUser = (req, res) => {
       if (user) {
         res
           .status(ERROR_CONFLICT)
-          .send('Пользователь с этим email уже существует');
+          .send({ message: 'Пользователь с этим email уже существует' });
       }
     });
 
