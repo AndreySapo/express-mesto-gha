@@ -1,5 +1,10 @@
 const Card = require('../models/card');
-const { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('../errors/errors');
+const {
+  ERROR_BAD_REQUEST,
+  ERROR_FORBIDDEN,
+  ERROR_NOT_FOUND,
+  ERROR_INTERNAL_SERVER,
+} = require('../errors/errors');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -35,15 +40,26 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((deletedCard) => {
-      if (!deletedCard) {
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      if (!card) {
         res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
         return;
       }
-      res.send({ data: deletedCard });
+
+      const userID = req.user._id;
+      const cardOwner = card.owner.toString();
+
+      // res.send(userID === cardOwner);
+      if (userID !== cardOwner) {
+        res.status(ERROR_FORBIDDEN).send('Попытка удалить чужую карточку');
+      }
+
+      card.remove()
+        .then(() => {
+          res.send({ data: card });
+        });
     })
-    // .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(ERROR_BAD_REQUEST).send({ message: 'Удаление карточки с несуществующим в БД id' });
