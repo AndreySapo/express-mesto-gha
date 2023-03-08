@@ -5,8 +5,6 @@ const User = require('../models/user');
 const { ERROR_UNAUTHORIZED } = require('../errors/errors');
 const ErrorInternalServer = require('../errors/ErrorInternalServer');
 const ErrorNotFound = require('../errors/ErrorNotFound');
-const ErrorBadRequest = require('../errors/ErrorBadRequest');
-const ErrorConflict = require('../errors/ErrorConflict');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -84,14 +82,10 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user,
     { name, about, avatar },
-    { new: true, runValidators: true, upsert: true },
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        // res
-        //   .status(ERROR_NOT_FOUND)
-        //   .send({ message: 'Пользователь по указанному _id не найден.' });
-        // return;
         throw new ErrorNotFound('Пользователь по указанному _id не найден.');
       }
       res.send({ user });
