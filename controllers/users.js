@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_UNAUTHORIZED } = require('../errors/errors');
 const ErrorInternalServer = require('../errors/ErrorInternalServer');
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
