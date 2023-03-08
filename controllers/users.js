@@ -54,13 +54,7 @@ module.exports.createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        throw new ErrorConflict('Пользователь с этим email уже существует');
-      }
-      return bcrypt.hash(password, 10);
-    })
+  bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
@@ -69,24 +63,18 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      res.send({
-        _id: user._id,
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-      });
+      const { _id } = user;
+      res
+        .status(201)
+        .send({
+          email,
+          name,
+          about,
+          avatar,
+          _id,
+        });
     })
-    .catch((err) => {
-      if (err.name === 'MongoServerError') {
-        throw new ErrorBadRequest('Переданы некорректные данные при создании пользователя.');
-      }
-      if (err.name === 'InternalServerError') {
-        throw new ErrorInternalServer('На сервере произошла ошибка');
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 // обновить информацию по юзеру

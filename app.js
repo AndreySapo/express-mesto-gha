@@ -6,7 +6,7 @@ const { errors, celebrate, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { ERROR_INTERNAL_SERVER } = require('./errors/errors');
+const { ERROR_INTERNAL_SERVER, ERROR_CONFLICT } = require('./errors/errors');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -46,6 +46,9 @@ app.post(
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
 app.use((err, req, res, next) => {
+  if (err.code === 11000) {
+    return res.status(ERROR_CONFLICT).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+  }
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
