@@ -48,10 +48,11 @@ module.exports.deleteCard = (req, res, next) => {
         throw new ErrorForbidden('Попытка удалить чужую карточку');
       }
 
-      card.remove()
-        .then(() => {
-          res.send({ data: card });
-        });
+      card.remove();
+      return card;
+    })
+    .then((card) => {
+      res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {

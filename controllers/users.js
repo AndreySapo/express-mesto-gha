@@ -5,8 +5,7 @@ const User = require('../models/user');
 const { ERROR_UNAUTHORIZED } = require('../errors/errors');
 const ErrorInternalServer = require('../errors/ErrorInternalServer');
 const ErrorNotFound = require('../errors/ErrorNotFound');
-const ErrorBadRequest = require('../errors/ErrorBadRequest');
-const ErrorConflict = require('../errors/ErrorConflict');
+const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -14,13 +13,7 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      if (err.name === 'InternalServerError') {
-        throw new ErrorInternalServer('На сервере произошла ошибка');
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 // получить юзера по айди
@@ -54,13 +47,7 @@ module.exports.createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        throw new ErrorConflict('Пользователь с этим email уже существует');
-      }
-      return bcrypt.hash(password, 10);
-    })
+  bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
@@ -69,24 +56,18 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      res.send({
-        _id: user._id,
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-      });
+      const { _id } = user;
+      res
+        .status(201)
+        .send({
+          email,
+          name,
+          about,
+          avatar,
+          _id,
+        });
     })
-    .catch((err) => {
-      if (err.name === 'MongoServerError') {
-        throw new ErrorBadRequest('Переданы некорректные данные при создании пользователя.');
-      }
-      if (err.name === 'InternalServerError') {
-        throw new ErrorInternalServer('На сервере произошла ошибка');
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 // обновить информацию по юзеру
@@ -96,14 +77,10 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user,
     { name, about, avatar },
-    { new: true, runValidators: true, upsert: true },
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        // res
-        //   .status(ERROR_NOT_FOUND)
-        //   .send({ message: 'Пользователь по указанному _id не найден.' });
-        // return;
         throw new ErrorNotFound('Пользователь по указанному _id не найден.');
       }
       res.send({ user });
@@ -124,7 +101,7 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user,
     { avatar },
-    { new: true, runValidators: true, upsert: true },
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
@@ -141,11 +118,15 @@ module.exports.updateAvatar = (req, res, next) => {
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new ErrorUnauthorized('Неправильные почта или пароль');
+      }
+
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
@@ -159,11 +140,7 @@ module.exports.login = (req, res) => {
 
       res.send({ _id: user._id });
     })
-    .catch((err) => {
-      res
-        .status(ERROR_UNAUTHORIZED)
-        .send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports.userInfo = (req, res, next) => {
