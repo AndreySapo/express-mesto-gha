@@ -2,9 +2,9 @@ const bcrypt = require('bcrypt');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_UNAUTHORIZED } = require('../errors/errors');
 const ErrorInternalServer = require('../errors/ErrorInternalServer');
 const ErrorNotFound = require('../errors/ErrorNotFound');
+const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -12,13 +12,7 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      if (err.name === 'InternalServerError') {
-        throw new ErrorInternalServer('На сервере произошла ошибка');
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 // получить юзера по айди
@@ -123,11 +117,15 @@ module.exports.updateAvatar = (req, res, next) => {
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new ErrorUnauthorized('Неправильные почта или пароль');
+      }
+
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
@@ -141,11 +139,7 @@ module.exports.login = (req, res) => {
 
       res.send({ _id: user._id });
     })
-    .catch((err) => {
-      res
-        .status(ERROR_UNAUTHORIZED)
-        .send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports.userInfo = (req, res, next) => {
