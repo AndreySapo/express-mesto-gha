@@ -56,6 +56,7 @@ app.use((err, req, res, next) => {
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
+    console.log('упали в ошибку ERROR_INTERNAL_SERVER в app.js');
     res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
   }
   next();
