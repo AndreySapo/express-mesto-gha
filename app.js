@@ -2,12 +2,11 @@ const { PORT = 3000, SERVER = 'mongodb://0.0.0.0:27017/mestodb' } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const { errors, celebrate, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('./errors/errors');
+const { ERROR_INTERNAL_SERVER } = require('./errors/errors');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -46,20 +45,14 @@ app.post(
 );
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
-app.use(errors());
-app.use((req, res, next) => {
-  res.status(ERROR_NOT_FOUND).send({ message: 'Этот путь не реализован' });
-
-  next();
-});
 app.use((err, req, res, next) => {
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
-    console.log('упали в ошибку ERROR_INTERNAL_SERVER в app.js');
     res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
   }
   next();
 });
+app.use(errors());
 
 app.listen(PORT);
