@@ -2,61 +2,50 @@ const bcrypt = require('bcrypt');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  ERROR_BAD_REQUEST,
-  ERROR_UNAUTHORIZED,
-  ERROR_NOT_FOUND,
-  ERROR_CONFLICT,
-  ERROR_INTERNAL_SERVER,
-} = require('../errors/errors');
+const { ERROR_UNAUTHORIZED } = require('../errors/errors');
+const ErrorInternalServer = require('../errors/ErrorInternalServer');
+const ErrorNotFound = require('../errors/ErrorNotFound');
+const ErrorBadRequest = require('../errors/ErrorBadRequest');
+const ErrorConflict = require('../errors/ErrorConflict');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 // получить всех юзеров
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'InternalServerError') {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({ message: 'На сервере произошла ошибка' });
-        return;
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
       }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
     });
 };
 
 // получить юзера по айди
-module.exports.getUserByID = (req, res) => {
+module.exports.getUserByID = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: 'Получение пользователя с несуществующим в БД id' });
+        throw new ErrorNotFound('Получение пользователя с несуществующим в БД id');
       }
       res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
+        throw new ErrorNotFound('Пользователь по указанному _id не найден.');
       }
       if (err.name === 'InternalServerError') {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({ message: 'На сервере произошла ошибка' });
-        return;
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
       }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
     });
 };
 
 // создать юзера
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -65,22 +54,13 @@ module.exports.createUser = (req, res) => {
     password,
   } = req.body;
 
-  if (!password) {
-    res
-      .status(ERROR_BAD_REQUEST)
-      .send('Переданы некорректные данные при создании пользователя');
-  }
-
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        res
-          .status(ERROR_CONFLICT)
-          .send({ message: 'Пользователь с этим email уже существует' });
+        throw new ErrorConflict('Пользователь с этим email уже существует');
       }
-    });
-
-  bcrypt.hash(password, 10)
+      return bcrypt.hash(password, 10);
+    })
     .then((hash) => {
       User.create({
         name,
@@ -88,42 +68,31 @@ module.exports.createUser = (req, res) => {
         avatar,
         email,
         password: hash,
-      })
-        .then((user) => {
-          res.send({
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-            email: user.email,
-          });
-        })
-        .catch((err) => {
-          // MongoServerError
-          if (err.name === 'MongoServerError') {
-            res
-              .status(ERROR_BAD_REQUEST)
-              .send({ message: 'Переданы некорректные данные при создании пользователя.' });
-            return;
-          }
-          if (err.name === 'ValidationError') {
-            res
-              .status(ERROR_BAD_REQUEST)
-              .send({ message: 'Переданы некорректные данные при создании пользователя.' });
-            return;
-          }
-          if (err.name === 'InternalServerError') {
-            res
-              .status(ERROR_INTERNAL_SERVER)
-              .send({ message: 'На сервере произошла ошибка' });
-            return;
-          }
-          res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
-        });
+      });
+    })
+    .then((user) => {
+      res.send({
+        _id: user._id,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
+    })
+    .catch((err) => {
+      if (err.name === 'MongoServerError') {
+        throw new ErrorBadRequest('Переданы некорректные данные при создании пользователя.');
+      }
+      if (err.name === 'InternalServerError') {
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
+      }
     });
 };
 
 // обновить информацию по юзеру
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -133,32 +102,25 @@ module.exports.updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
+        // res
+        //   .status(ERROR_NOT_FOUND)
+        //   .send({ message: 'Пользователь по указанному _id не найден.' });
+        // return;
+        throw new ErrorNotFound('Пользователь по указанному _id не найден.');
       }
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-        return;
-      }
       if (err.name === 'InternalServerError') {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({ message: 'На сервере произошла ошибка' });
-        return;
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
       }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
     });
 };
 
 // обновить отдельно аватар юзера
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -168,27 +130,16 @@ module.exports.updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
+        throw new ErrorNotFound('Пользователь по указанному _id не найден.');
       }
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при обновлении аватара.' });
-        return;
-      }
       if (err.name === 'InternalServerError') {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({ message: 'На сервере произошла ошибка' });
-        return;
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
       }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
     });
 };
 
@@ -217,15 +168,13 @@ module.exports.login = (req, res) => {
     });
 };
 
-module.exports.userInfo = (req, res) => {
+module.exports.userInfo = (req, res, next) => {
   const { _id } = req.user;
 
   User.findById(_id)
     .then((user) => {
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send('Пользователя с указанным _id не существует');
+        throw new ErrorNotFound('Пользователя с указанным _id не существует');
       }
 
       res.send({
@@ -235,11 +184,9 @@ module.exports.userInfo = (req, res) => {
     .catch((err) => {
       // ? может ещё какая-то ошибка должна быть?
       if (err.name === 'InternalServerError') {
-        res
-          .status(ERROR_INTERNAL_SERVER)
-          .send({ message: 'На сервере произошла ошибка' });
-        return;
+        throw new ErrorInternalServer('На сервере произошла ошибка');
+      } else {
+        next(err);
       }
-      res.send({ message: `Произошла неизвестная ошибка ${err.name}: ${err.message}` });
     });
 };
