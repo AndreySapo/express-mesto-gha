@@ -48,18 +48,17 @@ app.use('/cards', auth, cardsRouter);
 app.use(errors());
 app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {
-    return res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+    res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
   }
-
-  if (err.name === 'Error') {
-    return res.status(err.statusCode).send({ message: err.message });
-  }
-
   if (err.code === 11000) {
-    return res.status(ERROR_CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
+    res.status(ERROR_CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
   }
-
-  return next(res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' }));
+  if (err.statusCode) {
+    res.status(err.statusCode).send({ message: err.message });
+  } else {
+    res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+  }
+  next();
 });
 
 app.listen(PORT);
