@@ -1,24 +1,22 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
-const { ERROR_UNAUTHORIZED } = require('../errors/errors');
+const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-const handleAuthError = (res) => {
-  res
-    .status(ERROR_UNAUTHORIZED)
-    .send({ message: 'Необходима авторизация' });
+const handleAuthError = () => {
+  throw new ErrorUnauthorized('Необходима авторизация');
 };
 
 const extractBearerToken = (header) => header.replace('Bearer ', '');
 
-const generatePayload = (res, token) => {
+const generatePayload = (token) => {
   let payload;
 
   try {
     payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
   } catch (err) {
-    return handleAuthError(res);
+    return handleAuthError();
   }
 
   return payload;
@@ -30,14 +28,14 @@ module.exports = (req, res, next) => {
 
   if (authorization) {
     if (authorization.startsWith('Bearer ')) {
-      req.user = generatePayload(res, extractBearerToken(authorization));
+      req.user = generatePayload(extractBearerToken(authorization));
     } else {
-      return handleAuthError(res);
+      return handleAuthError();
     }
   } else if (req.cookies.jwt) {
-    req.user = generatePayload(res, req.cookies.jwt);
+    req.user = generatePayload(req.cookies.jwt);
   } else {
-    return handleAuthError(res);
+    return handleAuthError();
   }
 
   next();
