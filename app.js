@@ -6,7 +6,7 @@ const { errors, celebrate, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { ERROR_INTERNAL_SERVER, ERROR_CONFLICT } = require('./errors/errors');
+const { ERROR_INTERNAL_SERVER, ERROR_CONFLICT, ERROR_BAD_REQUEST } = require('./errors/errors');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -45,17 +45,21 @@ app.post(
 );
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
-app.use((err, req, res, next) => {
-  if (err.code === 11000) {
-    res.status(ERROR_CONFLICT).send({ message: 'Переданы некорректные данные при создании пользователя.' });
-  }
-  if (err.statusCode) {
-    res.status(err.statusCode).send({ message: err.message });
-  } else {
-    res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
-  }
-  next();
-});
 app.use(errors());
+app.use((err, req, res, next) => {
+  if (err.name === 'CastError' || err.name === 'ValidationError') {
+    return res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+  }
+
+  if (err.name === 'Error') {
+    return res.status(err.statusCode).send({ message: err.message });
+  }
+
+  if (err.code === 11000) {
+    return res.status(ERROR_CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
+  }
+
+  return next(res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' }));
+});
 
 app.listen(PORT);
