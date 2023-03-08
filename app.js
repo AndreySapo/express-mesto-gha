@@ -7,7 +7,7 @@ const { errors, celebrate, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { ERROR_NOT_FOUND } = require('./errors/errors');
+const { ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require('./errors/errors');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -50,6 +50,14 @@ app.use(errors());
 app.use((req, res, next) => {
   res.status(ERROR_NOT_FOUND).send({ message: 'Этот путь не реализован' });
 
+  next();
+});
+app.use((err, req, res, next) => {
+  if (err.statusCode) {
+    res.status(err.statusCode).send({ message: err.message });
+  } else {
+    res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
+  }
   next();
 });
 
