@@ -98,7 +98,7 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        throw new ErrorNotFound('Переданы некорректные данные для постановки лайка');
+        throw new ErrorNotFound('Переданы некорректные данные для снятия лайка');
       }
       res.send({ data: card });
     })
