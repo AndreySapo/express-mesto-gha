@@ -6,7 +6,7 @@ const { errors, celebrate, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { ERROR_INTERNAL_SERVER, ERROR_CONFLICT, ERROR_BAD_REQUEST } = require('./errors/errors');
+const { ERROR_INTERNAL_SERVER } = require('./errors/errors');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -48,12 +48,6 @@ app.use('/cards', auth, cardsRouter);
 app.use((req, res, next) => next(new ErrorNotFound('Этот путь не реализован')));
 app.use(errors());
 app.use((err, req, res, next) => {
-  if (err.name === 'CastError' || err.name === 'ValidationError') {
-    res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-  }
-  if (err.code === 11000) {
-    res.status(ERROR_CONFLICT).send({ message: 'Пользователь с таким электронным адресом уже зарегистрирован' });
-  }
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
   } else {

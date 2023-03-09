@@ -43,16 +43,13 @@ module.exports.deleteCard = (req, res, next) => {
       const userID = req.user._id;
       const cardOwner = card.owner.toString();
 
-      // res.send(userID === cardOwner);
       if (userID !== cardOwner) {
         throw new ErrorForbidden('Попытка удалить чужую карточку');
       }
 
-      card.remove();
-      return card;
-    })
-    .then((card) => {
-      res.send({ data: card });
+      return card.remove()
+        .then(() => res.send({ data: card }))
+        .catch(next);
     })
     .catch((err) => {
       if (err.name === 'CastError') {

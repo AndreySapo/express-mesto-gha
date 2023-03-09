@@ -5,6 +5,7 @@ const User = require('../models/user');
 const ErrorInternalServer = require('../errors/ErrorInternalServer');
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
+const ErrorConflict = require('../errors/ErrorConflict');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -65,7 +66,13 @@ module.exports.createUser = (req, res, next) => {
         _id,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ErrorConflict('Пользователь с таким электронным адресом уже зарегистрирован'));
+        return;
+      }
+      next(err);
+    });
 };
 
 // обновить информацию по юзеру
