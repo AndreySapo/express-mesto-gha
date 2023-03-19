@@ -15,7 +15,6 @@ const app = express();
 app.use(cookieParser());
 
 mongoose.set('strictQuery', false);
-// подключаемся к серверу mongo
 mongoose.connect(SERVER, { useNewUrlParser: true });
 
 app.use(bodyParser.json());
