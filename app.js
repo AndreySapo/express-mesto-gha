@@ -10,6 +10,7 @@ const { ERROR_INTERNAL_SERVER } = require('./errors/errors');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 app.use(cookieParser());
@@ -19,6 +20,7 @@ mongoose.connect(SERVER, { useNewUrlParser: true });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(requestLogger);
 app.post(
   '/signin',
   celebrate({
@@ -45,6 +47,7 @@ app.post(
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
 app.use((req, res, next) => next(new ErrorNotFound('Этот путь не реализован')));
+app.use(errorLogger);
 app.use(errors());
 app.use((err, req, res, next) => {
   if (err.statusCode) {
